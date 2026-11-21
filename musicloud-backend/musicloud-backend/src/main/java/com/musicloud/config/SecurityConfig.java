@@ -27,6 +27,7 @@ import java.util.List;
  *   - GET  /api/songs/**        → Anyone can browse songs (no token needed)
  *   - POST/PUT/DELETE /api/songs/** → Only ADMIN role can manage songs
  *   - GET  /api/users           → Only ADMIN can view all users
+ *   - The static web app         → Public
  *   - Everything else           → Must be logged in (valid JWT required)
  */
 @Configuration
@@ -53,6 +54,9 @@ public class SecurityConfig {
 
             // Route-level access rules
             .authorizeHttpRequests(auth -> auth
+                // Public: browser-based MusicLoud interface and its static assets
+                .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+
                 // Public: login and register
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/admin/login").permitAll()
 
