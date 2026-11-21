@@ -3,133 +3,228 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#100d18">
+  <meta name="theme-color" content="#11131f">
   <meta name="description" content="Discover music, build playlists, and listen with MusicLoud.">
   <title>MusicLoud — Your music space</title>
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
-  <div class="app-shell">
+  <main class="auth-screen" id="auth-screen">
+    <section class="auth-showcase">
+      <a class="brand auth-brand" href="/" aria-label="MusicLoud home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>music<span class="brand-accent">loud</span></span>
+      </a>
+      <div class="auth-message">
+        <p class="eyebrow"><span class="eyebrow-line"></span> A HOME FOR EVERY SOUND</p>
+        <h1>Every mood<br>has a <span>melody.</span></h1>
+        <p>Find the songs that feel like you. Save your favorites, build a playlist, and make every moment yours.</p>
+        <div class="showcase-note">
+          <span class="showcase-note-icon" aria-hidden="true">♫</span>
+          <span><strong>Your soundtrack, your rules.</strong><small>Pick up right where you left off.</small></span>
+        </div>
+      </div>
+      <div class="showcase-art" aria-hidden="true">
+        <div class="showcase-disc showcase-disc-back"></div>
+        <div class="showcase-disc showcase-disc-front"><span></span></div>
+        <div class="showcase-card showcase-card-one">♫</div>
+        <div class="showcase-card showcase-card-two">♪</div>
+        <span class="showcase-spark showcase-spark-one">✦</span>
+        <span class="showcase-spark showcase-spark-two">✧</span>
+      </div>
+      <div class="showcase-foot"><span class="status-dot"></span> MUSICLOUD IS READY WHEN YOU ARE</div>
+    </section>
+
+    <section class="auth-side">
+      <div class="auth-card">
+        <div class="mobile-auth-brand">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span>music<span class="brand-accent">loud</span></span>
+        </div>
+        <p class="eyebrow" id="auth-eyebrow">WELCOME BACK</p>
+        <h2 id="auth-title">Sign in to your space</h2>
+        <p class="auth-copy" id="auth-copy">Your playlists are only a beat away.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Account action">
+          <button type="button" class="auth-tab is-active" id="login-tab" role="tab" aria-selected="true">Sign in</button>
+          <button type="button" class="auth-tab" id="register-tab" role="tab" aria-selected="false">Create account</button>
+        </div>
+        <form id="auth-form">
+          <div id="auth-fields"></div>
+          <p class="form-error" id="auth-error" role="alert"></p>
+          <button class="primary-button full-button" id="auth-submit" type="submit">Sign in</button>
+        </form>
+        <p class="auth-footnote">Your music space is private to your account.</p>
+      </div>
+      <p class="auth-copyright">MUSICLOUD <span>·</span> YOUR MUSIC, YOUR MOMENT</p>
+    </section>
+  </main>
+
+  <div class="app-shell" id="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="/" aria-label="MusicLoud home">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         <span>music<span class="brand-accent">loud</span></span>
       </a>
 
+      <div class="sidebar-account" id="sidebar-account"></div>
+
       <p class="nav-caption">YOUR SPACE</p>
       <nav class="primary-nav" aria-label="Main navigation">
         <button class="nav-link is-active" id="discover-nav" type="button">
-          <span class="nav-icon" aria-hidden="true">⌕</span> Discover
+          <span class="nav-icon" aria-hidden="true">⌂</span> Home
+        </button>
+        <button class="nav-link" id="library-nav" type="button">
+          <span class="nav-icon" aria-hidden="true">▧</span> Your library
         </button>
         <button class="nav-link" id="playlists-nav" type="button">
-          <span class="nav-icon" aria-hidden="true">▤</span> My playlists
+          <span class="nav-icon" aria-hidden="true">▤</span> Playlists
         </button>
       </nav>
 
+      <div class="sidebar-section">
+        <div class="sidebar-section-heading">
+          <p class="nav-caption">YOUR GENRES</p>
+          <span class="sidebar-section-mark" aria-hidden="true">＋</span>
+        </div>
+        <div class="genre-list" id="genre-list"></div>
+      </div>
+
       <div class="sidebar-bottom">
+        <button class="create-playlist-link" id="sidebar-create-playlist" type="button">
+          <span aria-hidden="true">＋</span> Create playlist
+        </button>
         <div class="service-status" id="service-status" role="status">
           <span class="status-dot" aria-hidden="true"></span>
           <span id="service-status-text">Connecting to MusicLoud…</span>
         </div>
-        <div class="sidebar-account" id="sidebar-account"></div>
       </div>
     </aside>
 
-    <main class="main-content">
+    <div class="main-content">
       <header class="topbar">
-        <div class="mobile-brand">
-          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          <span>music<span class="brand-accent">loud</span></span>
+        <div class="history-actions" aria-label="Page shortcuts">
+          <button class="history-button" id="back-button" type="button" aria-label="Go to home">‹</button>
+          <button class="history-button" id="forward-button" type="button" aria-label="Go to playlists">›</button>
         </div>
+        <nav class="top-tabs" aria-label="Quick navigation">
+          <button class="top-tab is-active" id="home-tab" type="button">Home</button>
+          <button class="top-tab" id="playlists-tab" type="button">Play lists</button>
+        </nav>
         <label class="search-box">
           <span class="search-icon" aria-hidden="true">⌕</span>
           <span class="visually-hidden">Search songs, artists, or genres</span>
-          <input id="search-input" type="search" placeholder="Search songs, artists, genres…" autocomplete="off">
-          <kbd>⌘ K</kbd>
+          <input id="search-input" type="search" placeholder="Search…" autocomplete="off">
         </label>
         <div class="topbar-actions" id="topbar-actions"></div>
       </header>
 
-      <div class="content-wrap">
-        <section class="hero">
-          <div class="hero-content">
-            <p class="eyebrow"><span class="eyebrow-line"></span> YOUR SOUND, YOUR SPACE</p>
-            <h1>Find your next<br><span>favorite sound.</span></h1>
-            <p class="hero-copy">A little discovery can change your whole day. Explore the library and make it yours.</p>
-            <button class="primary-button hero-button" id="hero-browse" type="button">
-              Explore the library <span aria-hidden="true">→</span>
-            </button>
-          </div>
-          <div class="hero-art" aria-hidden="true">
-            <div class="disc disc-back"></div>
-            <div class="disc disc-front"><span class="disc-center"></span></div>
-            <span class="spark spark-one">✦</span>
-            <span class="spark spark-two">✧</span>
-            <span class="hero-note">♫</span>
-          </div>
-          <div class="hero-glow" aria-hidden="true"></div>
-        </section>
-
-        <section class="stats-row" aria-label="Library overview">
-          <div class="stat-card">
-            <span class="stat-icon purple-icon" aria-hidden="true">♫</span>
-            <div><strong id="song-count">—</strong><span>songs to discover</span></div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon pink-icon" aria-hidden="true">◉</span>
-            <div><strong id="genre-count">—</strong><span>genres in the mix</span></div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon blue-icon" aria-hidden="true">♡</span>
-            <div><strong id="playlist-count">—</strong><span>your playlists</span></div>
-          </div>
-        </section>
-
-        <section class="view-panel" id="discover-view">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">THE LIBRARY</p>
-              <h2>Made for your mood</h2>
-            </div>
-            <label class="genre-select-wrap">
-              <span class="visually-hidden">Filter by genre</span>
-              <select id="genre-filter" aria-label="Filter by genre">
-                <option value="all">All genres</option>
-              </select>
-            </label>
-          </div>
-          <div class="song-grid" id="song-grid" aria-live="polite"></div>
-          <div class="empty-state" id="catalog-empty" hidden>
-            <span class="empty-icon" aria-hidden="true">♫</span>
-            <h3>No songs found</h3>
-            <p>Try another search or choose a different genre.</p>
-          </div>
-          <div class="loading-state" id="catalog-loading">Loading your library…</div>
-        </section>
-
-        <section class="view-panel" id="playlists-view" hidden>
-          <div class="section-heading playlist-heading">
-            <div>
-              <p class="eyebrow">YOUR COLLECTION</p>
-              <h2>My playlists</h2>
-              <p class="section-copy">Save the songs you love, all in one place.</p>
-            </div>
-            <button class="primary-button" id="new-playlist-button" type="button">＋ New playlist</button>
-          </div>
-          <div class="playlist-layout">
-            <div class="playlist-list" id="playlist-list"></div>
-            <div class="playlist-detail" id="playlist-detail">
-              <div class="empty-state">
-                <span class="empty-icon" aria-hidden="true">♫</span>
-                <h3>Your next favorite mix starts here</h3>
-                <p>Create a playlist, then add songs from Discover.</p>
+      <div class="workspace-grid">
+        <main class="content-wrap">
+          <section class="view-panel" id="discover-view">
+            <div class="welcome-row">
+              <div>
+                <p class="eyebrow" id="welcome-eyebrow">YOUR MUSIC IS WAITING</p>
+                <h1 id="welcome-title">Good evening</h1>
+              </div>
+              <div class="library-summary">
+                <span><strong id="song-count">—</strong> songs</span>
+                <i></i>
+                <span><strong id="genre-count">—</strong> genres</span>
               </div>
             </div>
+
+            <section class="hero-card" aria-label="Featured song">
+              <div class="hero-copy">
+                <p class="eyebrow">FEATURED FROM YOUR LIBRARY</p>
+                <h2 id="hero-title">A sound for this moment</h2>
+                <p id="hero-artist">Discover something new in your collection.</p>
+                <button class="listen-button" id="hero-browse" type="button">
+                  <span class="listen-icon" aria-hidden="true">▶</span>
+                  <span id="hero-button-label">Explore music</span>
+                </button>
+              </div>
+              <div class="hero-art" id="hero-art" aria-hidden="true">
+                <div class="hero-record hero-record-back"></div>
+                <div class="hero-record hero-record-front"><span></span></div>
+                <img id="hero-cover-image" alt="" hidden>
+                <span class="hero-art-note">♫</span>
+              </div>
+              <div class="hero-shine" aria-hidden="true"></div>
+            </section>
+
+            <section class="section-block">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">FRESH FROM THE LIBRARY</p>
+                  <h2>Recently added</h2>
+                </div>
+                <label class="genre-select-wrap">
+                  <span class="visually-hidden">Filter by genre</span>
+                  <select id="genre-filter" aria-label="Filter by genre">
+                    <option value="all">All genres</option>
+                  </select>
+                </label>
+              </div>
+              <div class="song-grid" id="song-grid" aria-live="polite"></div>
+              <div class="empty-state" id="catalog-empty" hidden>
+                <span class="empty-icon" aria-hidden="true">♫</span>
+                <h3>No songs found</h3>
+                <p>Try another search or choose a different genre.</p>
+              </div>
+              <div class="loading-state" id="catalog-loading">Loading your library…</div>
+            </section>
+
+            <section class="section-block home-playlists-section">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">MADE BY YOU</p>
+                  <h2>Your playlists</h2>
+                </div>
+                <button class="quiet-button" id="new-playlist-button" type="button">＋ Create playlist</button>
+              </div>
+              <div class="home-playlist-grid" id="home-playlist-grid"></div>
+              <p class="playlist-count-note"><span id="playlist-count">0</span> playlists in your collection</p>
+            </section>
+          </section>
+
+          <section class="view-panel" id="playlists-view" hidden>
+            <div class="welcome-row playlist-welcome">
+              <div>
+                <p class="eyebrow">YOUR COLLECTION</p>
+                <h1>Playlists</h1>
+                <p class="section-copy">A place for every version of you.</p>
+              </div>
+              <button class="primary-button" id="new-playlist-page-button" type="button">＋ New playlist</button>
+            </div>
+            <div class="playlist-layout">
+              <div class="playlist-list" id="playlist-list"></div>
+              <div class="playlist-detail" id="playlist-detail">
+                <div class="empty-state">
+                  <span class="empty-icon" aria-hidden="true">♫</span>
+                  <h3>Your next favorite mix starts here</h3>
+                  <p>Create a playlist, then add songs from your library.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="right-rail">
+          <div class="rail-heading">
+            <div><p class="eyebrow">A LITTLE DISCOVERY</p><h2>In the mix</h2></div>
+            <span class="rail-equalizer" aria-hidden="true"><i></i><i></i><i></i></span>
           </div>
-        </section>
+          <div class="trending-list" id="trending-list"></div>
+          <div class="rail-quote">
+            <span class="quote-mark" aria-hidden="true">“</span>
+            <p>Music gives a soul to the universe, wings to the mind, flight to the imagination.</p>
+            <span class="quote-credit">A NOTE TO YOURSELF</span>
+          </div>
+          <div class="rail-footer">MADE FOR THE MOMENT <span>✦</span></div>
+        </aside>
       </div>
-    </main>
+    </div>
 
     <footer class="player-bar" aria-label="Music player">
       <div class="now-playing">
@@ -139,39 +234,24 @@
           <span id="player-artist">Your soundtrack is waiting</span>
         </div>
       </div>
-      <div class="player-controls">
-        <button class="play-button" id="play-toggle" type="button" aria-label="Play or pause" disabled>▶</button>
-        <div class="progress-track"><span id="progress-fill"></span></div>
-        <span class="player-time" id="player-time">0:00</span>
+      <div class="player-center">
+        <div class="player-controls">
+          <button class="player-skip" type="button" aria-label="Previous song" disabled>‹</button>
+          <button class="play-button" id="play-toggle" type="button" aria-label="Play or pause" disabled>▶</button>
+          <button class="player-skip" type="button" aria-label="Next song" disabled>›</button>
+        </div>
+        <div class="progress-row">
+          <span class="player-time" id="player-time">0:00</span>
+          <div class="progress-track"><span id="progress-fill"></span></div>
+          <span class="player-time" id="player-duration">0:00</span>
+        </div>
       </div>
-      <div class="player-volume" aria-hidden="true"><span>♫</span><div class="volume-track"><i></i></div></div>
+      <div class="player-volume"><span aria-hidden="true">◖</span><div class="volume-track"><i></i></div></div>
       <audio id="audio-player" preload="none"></audio>
     </footer>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <div class="modal-backdrop" id="auth-modal" hidden>
-    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
-      <div class="modal-brand">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <span>music<span class="brand-accent">loud</span></span>
-      </div>
-      <p class="eyebrow" id="auth-eyebrow">WELCOME BACK</p>
-      <h2 id="auth-title">Sign in to your space</h2>
-      <p class="modal-copy" id="auth-copy">Your playlists are only a beat away.</p>
-      <div class="auth-tabs" role="tablist" aria-label="Account action">
-        <button type="button" class="auth-tab is-active" id="login-tab" role="tab" aria-selected="true">Sign in</button>
-        <button type="button" class="auth-tab" id="register-tab" role="tab" aria-selected="false">Create account</button>
-      </div>
-      <form id="auth-form">
-        <div id="auth-fields"></div>
-        <p class="form-error" id="auth-error" role="alert"></p>
-        <button class="primary-button full-button" id="auth-submit" type="submit">Sign in</button>
-      </form>
-    </section>
-  </div>
 
   <div class="modal-backdrop" id="playlist-modal" hidden>
     <section class="modal-card compact-modal" role="dialog" aria-modal="true" aria-labelledby="playlist-modal-title">

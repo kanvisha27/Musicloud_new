@@ -12,29 +12,44 @@
     authMode: "login",
     selectedSongId: null,
     requestSequence: 0,
-    toastTimer: null
+    toastTimer: null,
+    searchTimer: null
   };
 
   const elements = {
+    authScreen: document.getElementById("auth-screen"),
+    appShell: document.getElementById("app-shell"),
     serviceStatus: document.getElementById("service-status"),
     serviceStatusText: document.getElementById("service-status-text"),
     sidebarAccount: document.getElementById("sidebar-account"),
     topbarActions: document.getElementById("topbar-actions"),
     discoverNav: document.getElementById("discover-nav"),
+    libraryNav: document.getElementById("library-nav"),
     playlistsNav: document.getElementById("playlists-nav"),
+    homeTab: document.getElementById("home-tab"),
+    playlistsTab: document.getElementById("playlists-tab"),
     discoverView: document.getElementById("discover-view"),
     playlistsView: document.getElementById("playlists-view"),
     searchInput: document.getElementById("search-input"),
     genreFilter: document.getElementById("genre-filter"),
+    genreList: document.getElementById("genre-list"),
     songGrid: document.getElementById("song-grid"),
     catalogEmpty: document.getElementById("catalog-empty"),
     catalogLoading: document.getElementById("catalog-loading"),
     songCount: document.getElementById("song-count"),
     genreCount: document.getElementById("genre-count"),
     playlistCount: document.getElementById("playlist-count"),
+    homePlaylistGrid: document.getElementById("home-playlist-grid"),
     playlistList: document.getElementById("playlist-list"),
     playlistDetail: document.getElementById("playlist-detail"),
-    authModal: document.getElementById("auth-modal"),
+    trendingList: document.getElementById("trending-list"),
+    welcomeTitle: document.getElementById("welcome-title"),
+    heroTitle: document.getElementById("hero-title"),
+    heroArtist: document.getElementById("hero-artist"),
+    heroArt: document.getElementById("hero-art"),
+    heroBrowse: document.getElementById("hero-browse"),
+    heroButtonLabel: document.getElementById("hero-button-label"),
+    heroCoverImage: document.getElementById("hero-cover-image"),
     authFields: document.getElementById("auth-fields"),
     authForm: document.getElementById("auth-form"),
     authError: document.getElementById("auth-error"),
@@ -58,7 +73,7 @@
   function readSession() {
     try {
       const session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
-      return session && typeof session.accessToken === "string" ? session : null;
+      return session && typeof session.accessToken === "string" && session.accessToken.trim() ? session : null;
     } catch {
       sessionStorage.removeItem(SESSION_KEY);
       return null;
@@ -141,17 +156,17 @@
     elements.sidebarAccount.innerHTML = signedIn
       ? `<button class="account-card" type="button" data-action="logout" aria-label="Sign out">
           <span class="avatar">${escapeHtml(initials(displayName))}</span>
-          <span class="account-copy"><strong>${escapeHtml(displayName)}</strong><span>Sign out</span></span>
+          <span class="account-copy"><strong>${escapeHtml(displayName)}</strong><span>Your MusicLoud space</span></span>
+          <span aria-hidden="true">···</span>
         </button>`
-      : `<button class="account-card" type="button" data-action="open-login">
-          <span class="avatar">♫</span>
-          <span class="account-copy"><strong>Make it yours</strong><span>Sign in or join free</span></span>
-        </button>`;
+      : "";
 
     elements.topbarActions.innerHTML = signedIn
-      ? `<button class="outline-button" type="button" data-action="logout">Sign out</button>`
-      : `<button class="text-button" type="button" data-action="open-login">Sign in</button>
-         <button class="outline-button" type="button" data-action="open-register">Create account</button>`;
+      ? `<div class="topbar-user">
+          <span class="topbar-user-name">${escapeHtml(displayName)}</span>
+          <button class="topbar-signout" type="button" data-action="logout">Sign out</button>
+        </div>`
+      : "";
   }
 
   function formatDuration(seconds) {
@@ -209,6 +224,54 @@
       `<option value="${escapeHtml(genre)}">${escapeHtml(genre)}</option>`).join("")}`;
     if (genres.includes(selected)) elements.genreFilter.value = selected;
     elements.genreCount.textContent = String(genres.length);
+    elements.genreList.innerHTML = genres.map(genre =>
+      `<button class="genre-link" type="button" data-action="select-genre" data-genre="${escapeHtml(genre)}">${escapeHtml(genre)}</button>`
+    ).join("");
+  }
+
+  function renderDashboardDetails() {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    const firstName = (state.session?.fullName || state.session?.username || "").trim().split(/\s+/)[0];
+    elements.welcomeTitle.textContent = firstName ? `${greeting}, ${firstName}` : greeting;
+
+    const featured = state.songs[0];
+    if (featured) {
+      elements.heroTitle.textContent = featured.title || "A sound for this moment";
+      elements.heroArtist.textContent = `${featured.artist || "Unknown artist"} · ${featured.genre || "Music"}`;
+      const coverUrl = safeUrl(featured.coverUrl);
+      elements.heroCoverImage.hidden = !coverUrl;
+      elements.heroArt.classList.toggle("has-cover", Boolean(coverUrl));
+      if (coverUrl) {
+        elements.heroCoverImage.src = coverUrl;
+        elements.heroCoverImage.addEventListener("error", () => {
+          elements.heroCoverImage.hidden = true;
+          elements.heroArt.classList.remove("has-cover");
+        }, { once: true });
+      } else {
+        elements.heroCoverImage.removeAttribute("src");
+      }
+      elements.heroButtonLabel.textContent = safeUrl(featured.audioUrl) ? "Listen now" : "Explore music";
+    } else {
+      elements.heroTitle.textContent = "A sound for this moment";
+      elements.heroArtist.textContent = "Discover something new in your collection.";
+      elements.heroButtonLabel.textContent = "Explore music";
+      elements.heroCoverImage.hidden = true;
+      elements.heroCoverImage.removeAttribute("src");
+      elements.heroArt.classList.remove("has-cover");
+    }
+
+    elements.trendingList.innerHTML = state.songs.slice(0, 6).map(song => {
+      const coverUrl = safeUrl(song.coverUrl);
+      const art = coverUrl
+        ? `<img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+        : "♫";
+      return `<button class="trending-row" type="button" data-action="play-song" data-song-id="${Number(song.id)}">
+        <span class="trending-art">${art}</span>
+        <span class="trending-copy"><strong>${escapeHtml(song.title || "Untitled")}</strong><span>${escapeHtml(song.artist || "Unknown artist")}</span></span>
+        <span class="trending-play" aria-hidden="true">▷</span>
+      </button>`;
+    }).join("") || `<div class="rail-empty">Songs will appear here when the library is ready.</div>`;
   }
 
   async function loadSongs() {
@@ -218,6 +281,7 @@
       state.songs = await api("/api/songs");
       elements.songCount.textContent = String(state.songs.length);
       populateGenres(state.songs);
+      renderDashboardDetails();
       await searchSongs();
     } catch (error) {
       elements.catalogLoading.hidden = true;
@@ -273,6 +337,18 @@
 
   function renderPlaylists() {
     elements.playlistCount.textContent = String(state.playlists.length);
+    elements.homePlaylistGrid.innerHTML = state.playlists.length
+      ? state.playlists.slice(0, 4).map(playlist => `
+          <button class="home-playlist-card" type="button" data-action="go-playlist" data-playlist-id="${Number(playlist.id)}">
+            <span class="playlist-mosaic" aria-hidden="true"><span>♫</span><span>♪</span><span>♬</span><span>♫</span></span>
+            <strong>${escapeHtml(playlist.name)}</strong>
+            <small>${playlist.songs.length} ${playlist.songs.length === 1 ? "song" : "songs"}</small>
+          </button>`).join("")
+      : `<button class="home-playlist-card create-playlist-card" type="button" data-action="create-playlist">
+          <span class="playlist-mosaic" aria-hidden="true"><span>＋</span><span>♫</span><span>♪</span><span>✦</span></span>
+          <strong>Create your first playlist</strong>
+          <small>A mix for every mood</small>
+        </button>`;
     if (!state.session) {
       elements.playlistList.innerHTML = `<div class="empty-state"><span class="empty-icon">♫</span><h3>Sign in to make playlists</h3><p>Your mixes stay with your account.</p><button class="primary-button" type="button" data-action="open-login">Sign in</button></div>`;
       elements.playlistDetail.innerHTML = "";
@@ -308,11 +384,14 @@
 
   function showView(view) {
     state.currentView = view;
-    const isDiscover = view === "discover";
+    const isDiscover = view !== "playlists";
     elements.discoverView.hidden = !isDiscover;
     elements.playlistsView.hidden = isDiscover;
-    elements.discoverNav.classList.toggle("is-active", isDiscover);
+    elements.discoverNav.classList.toggle("is-active", view === "discover");
+    elements.libraryNav.classList.toggle("is-active", view === "library");
     elements.playlistsNav.classList.toggle("is-active", !isDiscover);
+    elements.homeTab.classList.toggle("is-active", isDiscover);
+    elements.playlistsTab.classList.toggle("is-active", !isDiscover);
     if (!isDiscover) loadPlaylists();
   }
 
@@ -325,7 +404,7 @@
 
   function closeModal(modal) {
     modal.hidden = true;
-    if ([elements.authModal, elements.playlistModal, elements.createPlaylistModal].every(item => item.hidden)) {
+    if ([elements.playlistModal, elements.createPlaylistModal].every(item => item.hidden)) {
       document.body.style.overflow = "";
     }
   }
@@ -358,7 +437,8 @@
 
   function openAuth(mode = "login") {
     setAuthMode(mode);
-    openModal(elements.authModal);
+    elements.authScreen.hidden = false;
+    elements.appShell.hidden = true;
   }
 
   function clearSession() {
@@ -366,8 +446,12 @@
     state.playlists = [];
     state.activePlaylistId = null;
     sessionStorage.removeItem(SESSION_KEY);
+    elements.audio.pause();
+    elements.audio.removeAttribute("src");
+    elements.audio.load();
     renderAccount();
     renderPlaylists();
+    openAuth("login");
   }
 
   async function submitAuth(event) {
@@ -379,13 +463,16 @@
     const endpoint = state.authMode === "register" ? "/api/auth/register" : "/api/auth/login";
     try {
       const result = await api(endpoint, { method: "POST", body: JSON.stringify(body) });
+      if (!result?.accessToken) throw new Error("Sign-in succeeded without a session token. Please try again.");
       state.session = result;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(result));
+      elements.authScreen.hidden = true;
+      elements.appShell.hidden = false;
       renderAccount();
-      closeModal(elements.authModal);
+      showView("discover");
+      await loadSongs();
       await loadPlaylists();
       showToast(`Welcome${result.fullName ? `, ${result.fullName}` : ""}!`);
-      if (state.currentView === "playlists") renderPlaylists();
     } catch (error) {
       elements.authError.textContent = error.message;
     } finally {
@@ -522,12 +609,25 @@
 
     if (action === "open-login") openAuth("login");
     if (action === "open-register") openAuth("register");
+    if (action === "create-playlist") openCreatePlaylist();
     if (action === "logout") {
       clearSession();
       showToast("You have signed out.");
     }
     if (action === "add-song") openAddSong(actionButton.dataset.songId);
     if (action === "play-song") playSong(actionButton.dataset.songId);
+    if (action === "select-genre") {
+      elements.genreFilter.value = actionButton.dataset.genre;
+      elements.genreList.querySelectorAll(".genre-link").forEach(link => {
+        link.classList.toggle("is-active", link === actionButton);
+      });
+      showView("library");
+      searchSongs();
+    }
+    if (action === "go-playlist") {
+      state.activePlaylistId = Number(actionButton.dataset.playlistId);
+      showView("playlists");
+    }
     if (action === "select-playlist") {
       state.activePlaylistId = Number(actionButton.dataset.playlistId);
       renderPlaylists();
@@ -538,6 +638,10 @@
 
   function bindEvents() {
     elements.discoverNav.addEventListener("click", () => showView("discover"));
+    elements.libraryNav.addEventListener("click", () => {
+      showView("library");
+      elements.songGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     elements.playlistsNav.addEventListener("click", () => {
       if (!state.session) {
         openAuth("login");
@@ -545,10 +649,30 @@
       }
       showView("playlists");
     });
-    document.getElementById("hero-browse").addEventListener("click", () => {
-      elements.songGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+    elements.homeTab.addEventListener("click", () => showView("discover"));
+    elements.playlistsTab.addEventListener("click", () => {
+      if (!state.session) {
+        openAuth("login");
+        return;
+      }
+      showView("playlists");
+    });
+    document.getElementById("back-button").addEventListener("click", () => showView("discover"));
+    document.getElementById("forward-button").addEventListener("click", () => {
+      if (!state.session) openAuth("login");
+      else showView("playlists");
+    });
+    elements.heroBrowse.addEventListener("click", () => {
+      const featured = state.songs[0];
+      if (featured && safeUrl(featured.audioUrl)) playSong(featured.id);
+      else {
+        showView("library");
+        elements.songGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
     document.getElementById("new-playlist-button").addEventListener("click", openCreatePlaylist);
+    document.getElementById("new-playlist-page-button").addEventListener("click", openCreatePlaylist);
+    document.getElementById("sidebar-create-playlist").addEventListener("click", openCreatePlaylist);
     document.getElementById("login-tab").addEventListener("click", () => setAuthMode("login"));
     document.getElementById("register-tab").addEventListener("click", () => setAuthMode("register"));
     elements.authForm.addEventListener("submit", submitAuth);
@@ -585,7 +709,7 @@
         elements.searchInput.focus();
       }
       if (event.key === "Escape") {
-        [elements.authModal, elements.playlistModal, elements.createPlaylistModal]
+        [elements.playlistModal, elements.createPlaylistModal]
           .filter(modal => !modal.hidden)
           .forEach(closeModal);
       }
@@ -594,17 +718,25 @@
 
   async function initialize() {
     bindEvents();
-    renderAccount();
-    renderPlaylists();
     setAuthMode("login");
+    elements.authScreen.hidden = Boolean(state.session);
+    elements.appShell.hidden = !state.session;
+    if (state.session) {
+      renderAccount();
+      showView("discover");
+    }
+
     try {
       await api("/api/health");
       setServiceStatus(true);
     } catch {
       setServiceStatus(false);
     }
-    await loadSongs();
-    if (state.session) await loadPlaylists();
+
+    if (state.session) {
+      await loadSongs();
+      await loadPlaylists();
+    }
   }
 
   initialize();

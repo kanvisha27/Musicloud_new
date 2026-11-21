@@ -33,7 +33,9 @@ class WebUiSecurityTest {
 
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Your music space")));
+                .andExpect(content().string(containsString("Your music space")))
+                .andExpect(content().string(containsString("id=\"auth-screen\"")))
+                .andExpect(content().string(containsString("id=\"app-shell\" hidden")));
     }
 
     @Test
